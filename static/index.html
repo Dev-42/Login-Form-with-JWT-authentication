@@ -29,6 +29,13 @@
                 })
             })
             let data = await result.json()
+
+            if(data.status === 'ok'){
+                alert("Data inserted")
+            }
+            else{
+                alert(data.error)
+            }
         })
     </script>
 </body>
