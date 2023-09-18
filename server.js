@@ -1,15 +1,19 @@
 const express = require('express')
 const path = require('path')
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
+const bodyParser = require('body-parser')
+const JWT_SECRET = "dev's-secret"
 
 // custom modules created by me :)
 const {connection} = require('./db/conn')
 const {UserModel} = require('./model/User.model')
-const { error } = require('console')
 
 const app = express()
 app.use(express.json())
 app.use('/' , express.static(path.join(__dirname,'static')))
+// app.use('/' , express.static(path.join(__dirname,'static/login.html')))
+app.use(bodyParser.json())
 
 app.post('/api/register' , async(req,res) => {
     console.log(req.body)
@@ -45,6 +49,35 @@ app.post('/api/register' , async(req,res) => {
         }
         throw error
     }
+})
+
+// Handling login request
+app.post('/api/login' , async(req,res) => {
+    const {username , password} = req.body
+    
+        const user = await UserModel.findOne({username})
+
+        if(!user){
+            res.send({status : 'error' , error : 'Invalid username/password'})
+        }
+
+        const correct_login = bcrypt.compareSync(password,user.password)
+
+        const token = jwt.sign({
+            id : user._id , 
+            username : user.username
+        },JWT_SECRET)
+
+        if(correct_login){
+            // provide the user with a JWT 
+            res.send({status : 'ok' , data : token})
+        }
+        else{
+            // Display unsuccessfull message
+            res.send({status : 'error' , error : 'invalid token'})
+        }
+
+    res.send({status : 'ok'})
 })
 
 app.listen(8000, async() => {
