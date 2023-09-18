@@ -51,34 +51,35 @@ app.post('/api/register' , async(req,res) => {
     }
 })
 
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'static', 'login.html'));
+  });
+
 // Handling login request
-app.post('/api/login' , async(req,res) => {
-    const {username , password} = req.body
-    
-        const user = await UserModel.findOne({username})
+// Handling login request
+app.post('/api/login', async (req, res) => {
+    const { username, password } = req.body;
 
-        if(!user){
-            res.send({status : 'error' , error : 'Invalid username/password'})
-        }
+    const user = await UserModel.findOne({ username });
 
-        const correct_login = bcrypt.compareSync(password,user.password)
+    if (!user) {
+        return res.send({ status: 'error', error: 'Invalid username/password' }); // Return the response here
+    }
 
+    const correct_login = bcrypt.compareSync(password, user.password);
+
+    if (correct_login) {
+        // Provide the user with a JWT
         const token = jwt.sign({
-            id : user._id , 
-            username : user.username
-        },JWT_SECRET)
-
-        if(correct_login){
-            // provide the user with a JWT 
-            res.send({status : 'ok' , data : token})
-        }
-        else{
-            // Display unsuccessfull message
-            res.send({status : 'error' , error : 'invalid token'})
-        }
-
-    res.send({status : 'ok'})
-})
+            id: user._id,
+            username: user.username
+        }, JWT_SECRET);
+        return res.send({ status: 'ok', data: token }); // Return the response here
+    } else {
+        // Display unsuccessful message
+        return res.send({ status: 'error', error: 'Invalid token' }); // Return the response here
+    }
+});
 
 app.listen(8000, async() => {
     try{
