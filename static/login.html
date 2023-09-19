@@ -32,6 +32,7 @@
 
             if(data.status === 'ok'){
                 console.log("Got the token : " , data.data)
+                localStorage.setItem('token' , data.data)
                 alert("Data correct data")
             }
             else{
